@@ -1,2 +1,2 @@
 # api
-REST API, WebSocket with GoLang
+REST API, WebSocket with Rust
