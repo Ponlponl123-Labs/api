@@ -1,5 +1,4 @@
 import { Elysia, file } from "elysia";
-import mariadb from "@/lib/db";
 import redis from "@/lib/redis";
 
 import routes from "./routes/route";
@@ -10,7 +9,7 @@ const app = new Elysia()
     status(res_status);
     return {
       status: res_status,
-      message: "Welcome to Labs API!",
+      message: "Welcome to Ponlponl123 Labs API!",
       notes: {
         for_developers:
           "Please visit /app for API documentation and Developer Portal.",
@@ -26,17 +25,6 @@ const app = new Elysia()
   .get("/favicon.ico", () => file("./public/favicon.ico"))
   .use(routes)
   .listen(3000);
-
-const dbClient = mariadb.getConnection();
-dbClient
-  .getConnection()
-  .then((conn) => {
-    console.log("MariaDB connected");
-    conn.release();
-  })
-  .catch((err) => {
-    console.error("MariaDB connection error:", err);
-  });
 
 const redisClient = redis.getClient();
 redisClient.on("connect", () => {

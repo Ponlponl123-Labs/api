@@ -1,14 +1,23 @@
 import mariadb from "mariadb";
 
 class MariaDB {
+  public name: string;
   private connection: mariadb.Pool;
 
-  constructor(autoConnect: boolean = false) {
+  constructor(
+    name: string,
+    host: string,
+    user: string,
+    password: string,
+    database: string,
+    autoConnect: boolean = false
+  ) {
+    this.name = name;
     this.connection = mariadb.createPool({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      host: host,
+      user: user,
+      password: password,
+      database: database,
       connectionLimit: 5,
     });
     if (autoConnect) {
@@ -19,10 +28,10 @@ class MariaDB {
   private async testConnection() {
     try {
       const conn = await this.connection.getConnection();
-      console.log("MariaDB connected:", conn.threadId);
+      console.log(`MariaDB connected (${this.name}):`, conn.threadId);
       conn.release();
     } catch (err) {
-      console.error("Error connecting to MariaDB:", err);
+      console.error(`Error connecting to MariaDB (${this.name}):`, err);
     }
   }
 
@@ -35,6 +44,23 @@ class MariaDB {
   }
 }
 
-export const db = new MariaDB();
+export const databases = {
+  central: new MariaDB(
+    "central",
+    process.env.DB_HOST_CT || "localhost",
+    process.env.DB_USER_CT || "root",
+    process.env.DB_PASS_CT || "",
+    process.env.DB_NAME_CT || "central_db",
+    true
+  ),
+  redirector: new MariaDB(
+    "redirector",
+    process.env.DB_HOST_RT || "localhost",
+    process.env.DB_USER_RT || "root",
+    process.env.DB_PASS_RT || "",
+    process.env.DB_NAME_RT || "redirector_db",
+    true
+  ),
+};
 
-export default db;
+export default databases;
