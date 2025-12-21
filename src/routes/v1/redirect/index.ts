@@ -5,8 +5,9 @@ import record from "./record";
 
 export const route = new Elysia({ prefix: "/redirect" }).get(
   "/:id?",
-  async ({ params: { id }, headers, server, request }) => {
+  async ({ params: { id }, headers, server, request, status }) => {
     if (!id) {
+      status(400);
       return {
         status: 400,
         message: "Bad Request: Missing ID parameter.",
@@ -20,6 +21,7 @@ export const route = new Elysia({ prefix: "/redirect" }).get(
       const cached = await redisClient.get(`redirect:${id}`);
       if (cached) {
         await record(reqIp, headers as any, id);
+        status(302);
         return {
           status: 302,
           redirect: cached,
@@ -27,6 +29,7 @@ export const route = new Elysia({ prefix: "/redirect" }).get(
       }
     } catch (err: any) {
       console.error("Redis error while fetching redirect:", err);
+      status(500);
       return {
         status: 500,
         message: "Internal Server Error: " + err.message,
@@ -52,18 +55,21 @@ export const route = new Elysia({ prefix: "/redirect" }).get(
         } catch {}
 
         await record(reqIp, headers as any, id);
+        status(302);
         return {
           status: 302,
           redirect: targetUrl,
         };
       }
 
+      status(404);
       return {
         status: 404,
         message: "Not Found: No redirect found for the given ID.",
       };
     } catch (err: any) {
       console.error("Error querying redirect endpoint:", err);
+      status(500);
       return {
         status: 500,
         message: "Internal Server Error",
